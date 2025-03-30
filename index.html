@@ -7,6 +7,7 @@
           content="width=device-width, initial-scale=1.0">
     <title>Szkolna Liga SP9</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
           rel="stylesheet">
     <style>
@@ -150,7 +151,6 @@
             transition: background-color 0.2s;
         }
 
-
         @media (max-width: 768px) {
             .container {
                 padding: 20px 10px;
@@ -182,7 +182,8 @@
     <div class="overlay">
         <div class="container">
             <!-- Nagłówek graficzny -->
-            <div class="header-image">
+            <div class="header-image"
+                 style="position: relative;">
                 <img id="group-header"
                      src="results/3-5.png"
                      alt="Nagłówek grupy"
