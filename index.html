@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Szkolna Liga SP9</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
+          rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(120deg, #62c1ff, #0e8dd7);
+            margin: 0;
+            padding: 0;
+            color: #ffffff;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.5);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffffee;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px 20px;
+            color: #111827;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo {
+            width: 60px;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+        }
+
+        .football-icon {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            width: 50px;
+            opacity: 0.6;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 800;
+            margin: 20px auto;
+            font-size: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 10px 16px;
+            background-color: #f3f4f6;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .tab:hover {
+            background-color: #e0e7ff;
+            transform: scale(1.05);
+        }
+
+        .tab.active {
+            background-color: #2563eb;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: none;
+            text-align: center;
+            font-size: 0.95rem;
+            color: #111827;
+            /* Set text color to dark gray */
+        }
+
+        th {
+            background-color: #0e8dd7;
+            color: black;
+            /* Keep header text white */
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f3f4f6;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #e0f2fe;
+        }
+
+        tr:hover {
+            background-color: #bae6fd;
+            transition: background-color 0.2s;
+        }
+
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 10px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .tab {
+                padding: 8px 14px;
+                font-size: 0.9rem;
+            }
+
+            th,
+            td {
+                font-size: 0.85rem;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+        <div class="container">
+            <!-- Nagłówek graficzny -->
+            <div class="header-image">
+                <img id="group-header"
+                     src="results/3-5.png"
+                     alt="Nagłówek grupy"
+                     style="display: block; margin: 0 auto; max-width: 100%; max-height: 500px; object-fit: cover; border-radius: 16px; margin-bottom: 20px;">
+            </div>
+            <div class="tabs">
+                <div class="tab active"
+                     onclick="switchTab('grupaA')">🏅 Grupa A (kl. 3-5)</div>
+                <div class="tab"
+                     onclick="switchTab('grupaB')">🥇 Grupa B (kl. 6-8)</div>
+            </div>
+            <div id="grupaA"
+                 class="section active">
+                <h2>📅 Mecze i historia – Grupa A</h2>
+                <div id="history_A"></div>
+                <h2>🏆 Tabela – Grupa A</h2>
+                <div id="standings_A"></div>
+            </div>
+            <div id="grupaB"
+                 class="section">
+                <h2>📅 Mecze i historia – Grupa B</h2>
+                <div id="history_B"></div>
+                <h2>🏆 Tabela – Grupa B</h2>
+                <div id="standings_B"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const tabs = document.querySelectorAll('.tab');
+        const sections = document.querySelectorAll('.section');
+
+        function switchTab(id) {
+            tabs.forEach(tab => tab.classList.remove('active'));
+            sections.forEach(section => section.classList.remove('active'));
+            document.querySelector(`.tab[onclick="switchTab('${id}')"]`).classList.add('active');
+            document.getElementById(id).classList.add('active');
+
+            // Zmiana nagłówka graficznego
+            const img = document.getElementById('group-header');
+            img.src = id === 'grupaA' ? 'results/3-5.png' : 'results/6-8.png';
+        }
+
+        function loadExcel() {
+            fetch('results/liga_szkolna.xlsx')
+                .then(res => res.arrayBuffer())
+                .then(data => {
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                    const grupaA = [rows[0]];
+                    const grupaB = [rows[0]];
+
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (row[5] && row[5].toUpperCase() === 'A') grupaA.push(row);
+                        else if (row[5] && row[5].toUpperCase() === 'B') grupaB.push(row);
+                    }
+
+                    displayHistory(grupaA, 'history_A');
+                    displayStandings(grupaA, 'standings_A');
+                    displayHistory(grupaB, 'history_B');
+                    displayStandings(grupaB, 'standings_B');
+                });
+        }
+
+        function displayHistory(data, elementId) {
+            let html = '<table><tr><th>Data</th><th>Godzina</th><th>Gospodarz</th><th>Gość</th><th>Wynik</th></tr>';
+            data.slice(1).forEach(row => {
+                const date = row[0] || '-';
+                const time = row[1] || '-';
+                const home = row[2] || '-';
+                const away = row[3] || '-';
+                const score = row[4] || '-';
+
+                let [homeScore, awayScore] = score.split('-').map(Number);
+                if (isNaN(homeScore) || isNaN(awayScore)) {
+                    homeScore = awayScore = null; // Handle invalid scores
+                }
+
+                const homeBold = homeScore > awayScore ? 'font-weight: bold;' : '';
+                const awayBold = awayScore > homeScore ? 'font-weight: bold;' : '';
+
+                html += `<tr>
+                    <td>${date}</td>
+                    <td>${time}</td>
+                    <td style="${homeBold}">${home}</td>
+                    <td style="${awayBold}">${away}</td>
+                    <td>${score}</td>
+                </tr>`;
+            });
+            html += '</table>';
+            document.getElementById(elementId).innerHTML = html;
+        }
+
+        function displayStandings(data, elementId) {
+            const stats = {};
+            const headToHead = {};
+
+            // Process match data
+            for (let i = 1; i < data.length; i++) {
+                const [date, time, home, away, score] = data[i];
+                if (!score || !home || !away) continue;
+                const [homeScore, awayScore] = score.split('-').map(Number);
+
+                if (!(home in stats)) stats[home] = { P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, Pts: 0 };
+                if (!(away in stats)) stats[away] = { P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, Pts: 0 };
+
+                // Update head-to-head results
+                if (!headToHead[home]) headToHead[home] = {};
+                if (!headToHead[away]) headToHead[away] = {};
+                if (!headToHead[home][away]) headToHead[home][away] = { GF: 0, GA: 0 };
+                if (!headToHead[away][home]) headToHead[away][home] = { GF: 0, GA: 0 };
+
+                headToHead[home][away].GF += homeScore;
+                headToHead[home][away].GA += awayScore;
+                headToHead[away][home].GF += awayScore;
+                headToHead[away][home].GA += homeScore;
+
+                // Update stats
+                stats[home].P++;
+                stats[away].P++;
+                stats[home].GF += homeScore;
+                stats[home].GA += awayScore;
+                stats[away].GF += awayScore;
+                stats[away].GA += homeScore;
+
+                if (homeScore > awayScore) {
+                    stats[home].W++;
+                    stats[home].Pts += 3;
+                    stats[away].L++;
+                } else if (homeScore < awayScore) {
+                    stats[away].W++;
+                    stats[away].Pts += 3;
+                    stats[home].L++;
+                } else {
+                    stats[home].D++;
+                    stats[away].D++;
+                    stats[home].Pts++;
+                    stats[away].Pts++;
+                }
+            }
+
+            // Convert stats to an array and sort
+            const table = Object.entries(stats).map(([team, s]) => ({ team, ...s }));
+            table.sort((a, b) => {
+                if (b.Pts !== a.Pts) return b.Pts - a.Pts; // Sort by points
+                const headToHeadA = headToHead[a.team][b.team] || { GF: 0, GA: 0 };
+                const headToHeadB = headToHead[b.team][a.team] || { GF: 0, GA: 0 };
+                const headToHeadDiff = (headToHeadA.GF - headToHeadA.GA) - (headToHeadB.GF - headToHeadB.GA);
+                if (headToHeadDiff !== 0) return headToHeadDiff; // Sort by head-to-head
+                if (b.GF !== a.GF) return b.GF - a.GF; // Sort by goals scored
+                if (a.GA !== b.GA) return a.GA - b.GA; // Sort by goals conceded
+                return 0; // Same position if all criteria are equal
+            });
+
+            // Generate HTML table
+            let html = '<table><tr><th>Miejsce</th><th>Drużyna</th><th>M</th><th>W</th><th>R</th><th>P</th><th>+/-</th><th>PKT</th></tr>';
+            let currentPlace = 1;
+            for (let i = 0; i < table.length; i++) {
+                if (i > 0 && table[i].Pts === table[i - 1].Pts &&
+                    (headToHead[table[i].team][table[i - 1].team] || { GF: 0, GA: 0 }).GF - (headToHead[table[i].team][table[i - 1].team] || { GF: 0, GA: 0 }).GA === 0 &&
+                    table[i].GF === table[i - 1].GF &&
+                    table[i].GA === table[i - 1].GA) {
+                    // Same position if all criteria are equal
+                } else {
+                    currentPlace = i + 1;
+                }
+                html += `<tr><td>${currentPlace}</td><td>${table[i].team}</td><td>${table[i].P}</td><td>${table[i].W}</td><td>${table[i].D}</td><td>${table[i].L}</td><td>${table[i].GF}-${table[i].GA}</td><td>${table[i].Pts}</td></tr>`;
+            }
+            html += '</table>';
+            document.getElementById(elementId).innerHTML = html;
+        }
+
+        loadExcel();
+    </script>
+</body>
+
+</html>
